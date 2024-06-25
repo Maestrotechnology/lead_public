@@ -100,51 +100,7 @@ async def login(*,db: Session = Depends(deps.get_db),
     userId=None
     userType=None
   
-    if not user:
-
-
-        payload = {"username":userName,
-               "password":password}
-
-        response = requests.request(
-                "POST",
-                # "http://192.168.1.214:8001/login/access-token",
-        
-                "https://erp.themaestro.in:8001/accounts/login/access-token",
-
-                data=payload
-            )
-        
-        
-        if int(response.status_code)==200:
-            getUser=db.query(User).\
-             filter( or_(User.user_name == userName) 
-                   , User.user_type==4,User.status == 1).first()
-            if not getUser:
-                    createUsers = User(
-                        user_type = 4,
-                        name = userName,
-                        user_name = userName,
-                        password = get_password_hash(password),
-                        dealer_id = 91,
-                        is_active = 1,
-                        created_at = datetime.now(settings.tz_IN),
-                        status =1)
-                    
-                    db.add(createUsers)
-                    db.commit()
-                    userId = createUsers.id
-                    userType = 4
-            else:
-                getUser.password = get_password_hash(password)
-                getUser.updated_at = datetime.now(settings.tz_IN)
-                db.commit()
-                userId = getUser.id
-                userType = 4
-                
-
-        else:
-            return {"status": 0,"msg": "Your account not found.Please check the details you entered."}
+  
         
     if user and user!=1: 
         userId = user.id
@@ -153,9 +109,9 @@ async def login(*,db: Session = Depends(deps.get_db),
     if user==1:
         return {"status":0,"msg":"wrong userName or password"}
     
-    # if user and user.user_type in [1,2]:
-    #     if int(device_type) in deviceTypeData:
-    #         return {"status":0,"msg":"You are only allowed to log in via website."}
+    if user and user.user_type in [1,2]:
+        if int(device_type) in deviceTypeData:
+            return {"status":0,"msg":"You are only allowed to log in via website."}
 
     key = None
     
